@@ -2,41 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-
-
-
-const blockTrashTalks = [
-  "Nice try, but I saw that coming.",
-  "Denied!",
-  "Blocking that was too easy.",
-  "You thought you had me?",
-  "Predictable. Try harder.",
-];
-
-const winTrashTalks = [
-  "Game over, I win again!",
-  "Your X is cute. I’ll put it next to my victory.",
-  "Another human falls to my brilliance.",
-  "You tried. It was adorable.",
-  "I should charge tuition for this masterclass.",
-];
-
-const drawTrashTalks = [
-  "A draw? You're lucky today.",
-  "Well, that was... anticlimactic.",
-  "Even match? Let’s see how long it lasts.",
-  "I guess we're both decent.",
-  "Try again. Maybe I'll let you win next time.",
-];
-
-const respondTaunts = [
-  "Hmm... interesting move. I can do better.",
-  "I see what you're trying. Let's raise the stakes.",
-  "Nice try, human. Watch this.",
-  "You're just setting me up for greatness.",
-  "Your move has been... noted. Now observe.",
-];
+import { TrashTalks } from "./TrashTalks";
 
 function Square({ value, onSquareClick }) {
   return (
@@ -45,6 +11,12 @@ function Square({ value, onSquareClick }) {
     </button>
   );
 }
+
+function checkIfLastTurn(board) {
+  const emptyCount = board.filter((sq) => sq === null).length;
+  return emptyCount === 1;
+}
+
 
 export default function Board() {
   const [taunt, setTaunt] = useState("");
@@ -62,6 +34,10 @@ export default function Board() {
     const winner = calculateWinner(squares);
     const isDraw = squares.every((square) => square !== null);
 
+    if (checkIfLastTurn(squares)) {
+      return;
+    }
+
     if (!xIsNext && !winner && !isDraw) {
       const botTimeout = setTimeout(() => {
         const bestMove = getBestMove(squares);
@@ -76,12 +52,12 @@ export default function Board() {
           const newWinner = calculateWinner(nextSquares);
           if (newWinner === "O") {
             toast(
-              winTrashTalks[Math.floor(Math.random() * winTrashTalks.length)]
+              TrashTalks.winTrashTalks[Math.floor(Math.random() * TrashTalks.winTrashTalks.length)]
             );
           } else if (willBlockPlayer(squares, bestMove)) {
             toast(
-              blockTrashTalks[
-                Math.floor(Math.random() * blockTrashTalks.length)
+              TrashTalks.blockTrashTalks[
+                Math.floor(Math.random() * TrashTalks.blockTrashTalks.length)
               ]
             );
           }
@@ -93,28 +69,32 @@ export default function Board() {
 
     // If board full and no winner, it's a draw
     if (isDraw && !winner) {
-      toast(drawTrashTalks[Math.floor(Math.random() * drawTrashTalks.length)]);
+      toast(
+        TrashTalks.drawTrashTalks[Math.floor(Math.random() * TrashTalks.drawTrashTalks.length)]);
     }
   }, [xIsNext, squares]);
 
   // Handle clicks for both user and bot
   function handleClicks(i) {
-    if (squares[i] || calculateWinner(squares)) {
-      return;
-    }
+      if (squares[i] || calculateWinner(squares)) {
+        return;
+      }
 
-    const nextSquares = squares.slice();
-    nextSquares[i] = xIsNext ? "X" : "O";
-    setSquares(nextSquares);
-    setxIsNext(!xIsNext);
+      const nextSquares = squares.slice();
+      nextSquares[i] = xIsNext ? "X" : "O";
+      setSquares(nextSquares);
+      setxIsNext(!xIsNext);
 
     if (xIsNext) {
-      // User just made a move, show respond taunt
-      toast(respondTaunts[Math.floor(Math.random()*respondTaunts.length)]);
-    }
-
-    // Bot move taunts handled inside useEffect after bot move, so no need here
+      const emptySquares = nextSquares.filter((sq) => sq === null).length;
+      if (emptySquares > 1) {
+        toast(TrashTalks.respondTaunts[Math.floor(Math.random() * TrashTalks.respondTaunts.length)]);
   }
+}
+  setSquares(nextSquares);
+  setxIsNext(!xIsNext);
+
+}
 
   const winner = calculateWinner(squares);
   let status;
